@@ -66,8 +66,8 @@ resource "aws_instance" "web" {
       "sudo echo '${file("~/.terraform.d/nginx.repo")}' > ~/nginx.repo",
       "sudo cp ~/nginx.repo /etc/yum.repos.d/",
       "sudo yum -y install nginx",
-      "sudo echo '${file("~/.terraform.d/jenkins.conf")}' > ~/jenkins.conf",
-      "sudo cp ~/jenkins.conf /etc/nginx/conf.d/",
+ ##     "sudo echo '${file("~/.terraform.d/jenkins.conf")}' > ~/jenkins.conf",
+ ##     "sudo cp ~/jenkins.conf /etc/nginx/conf.d/",
       "sudo yum install wget -y",
       "sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins.io/redhat-stable/jenkins.repo",
       "sudo rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io.key",
@@ -77,6 +77,32 @@ resource "aws_instance" "web" {
       
     ]
   }
+  
+  provisioner "file" {
+    connection {
+      host        = self.public_ip
+      user        = "centos"
+      type        = "ssh"
+      private_key = file("~/.ssh/terraform_key")
+      agent       = true
+    }
+    content = "${templatefile("jenkins.conf.tpl", {server_name = "${self.public_ip}"})}"
+    destination = "/tmp/jenkins.conf"
+  }
+  provisioner "remote-exec" {
+    connection {
+      host        = self.public_ip
+      user        = "centos"
+      type        = "ssh"
+      private_key = file("~/.ssh/terraform_key")
+      agent       = true
+    }
+    inline = [
+      "sudo cp /tmp/jenkins.conf /etc/nginx/conf.d/",
+      "sudo systemctl restart nginx"
+      ]
+  }
+
   tags = {
     Name = "HelloWorld"
   }

@@ -1,0 +1,28 @@
+server {
+  listen 80 default_server;
+  server_name ${server_name};
+ 
+  # Remove nginx and OS versions from server header
+  server_tokens off;
+ 
+  # Extract real IP from X-Forwarded-For header to see user IP in nginx logs
+  set_real_ip_from  10.0.0.0/8;
+  set_real_ip_from  172.16.0.0/12;
+  real_ip_header    X-Forwarded-For;
+  real_ip_recursive on;
+ 
+  # Proxy all requests to Jenkins
+  location / {
+    proxy_set_header        Host              $host;
+    proxy_set_header        X-Real-IP         $remote_addr;
+    proxy_set_header        X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_set_header        X-Forwarded-Port  $http_x_forwarded_port;
+ 
+    proxy_pass              http://localhost:8080;
+ 
+    # Required for new HTTP-based CLI
+    proxy_http_version      1.1;
+    proxy_request_buffering off;
+  }
+}
