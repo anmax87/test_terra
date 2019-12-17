@@ -24,7 +24,7 @@ case $1 in
 esac
 }
 
-if [ -s $file ]; then
+if [ -s "$file" ]; then
 host_ping
 else 
 echo "file is not exist"
