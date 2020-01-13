@@ -1,0 +1,10 @@
+[bastion]
+192.168.111.109 ansible_user=vagrant
+
+[privat]
+10.10.0.30 
+10.10.0.20
+
+[privat:vars]
+ansible_user=vagrant
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q vagrant@192.168.111.109"'
