@@ -1,0 +1,15 @@
+---
+- name: ec2
+  hosts: all
+  become: yes
+  gather_facts: no
+ 
+  tasks:
+  - name: Install vim
+    yum:
+          name: vim
+          state: latest
+...
+
+           
+           
