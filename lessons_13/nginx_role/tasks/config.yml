@@ -1,0 +1,32 @@
+---
+# tasks file for nginx_role
+- name: Set SELinux booleans for nginx
+  command: "setsebool -P {{ item }} on"
+  with_items:
+    - httpd_can_network_connect
+
+- name: Create vhost folder RedHat
+  file:
+    path: /var/www/html/{{ nginx_host.name }}
+    state: directory
+    mode: "0755"
+    owner: nginx
+    group: nginx
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  when: ansible_os_family == "RedHat"
+
+- name: Create vhost folder "Debian"
+  file:
+    path: /var/www/{{ nginx_host.name }}
+    state: directory
+    mode: "0755"
+    owner: www-data
+    group: www-data
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  when: ansible_os_family == "Debian"

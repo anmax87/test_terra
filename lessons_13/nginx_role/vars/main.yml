@@ -1,0 +1,11 @@
+---
+# vars file for nginx_role
+nginx_host:
+  - name: "web1.exemple.com"
+    type: "http"
+  - name: "web2.exemple.com"
+    type: "https"
+    email: "admin@exemple.com"
+  - name: "web3.exemple.com"
+    type: "redirect"
+    email: "admin@exemple.com"

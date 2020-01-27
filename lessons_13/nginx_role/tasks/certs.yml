@@ -1,0 +1,11 @@
+---
+# tasks file for cerbot_role
+- name: Generate Certificate for Domains
+  shell: certbot --authenticator standalone --installer nginx certonly -d '{{ nginx_host.name }}' --email anmaxx@gi.ua --agree-tos -n --no-verify-ssl --pre-hook "sudo systemctl stop nginx" --post-hook "sudo systemctl start nginx" --redirect
+  args:
+        creates: /etc/letsencrypt/live/{{ nginx_host.name }}
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  when: nginx_host.type == "https" or nginx_host.type == "redirect"

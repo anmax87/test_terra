@@ -1,0 +1,21 @@
+---
+# tasks file for nginx_role
+- include: install.yml
+  become: true
+  tags:
+    - nginx_install
+
+- include: config.yml
+  become: true
+  tags:
+    - config_nginx
+
+- include: vhost.yml
+  become: true
+  tags:
+    - nginx_vhost
+
+- include: certs.yml
+  become: true
+  tags:
+    - vhost_certs

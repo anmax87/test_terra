@@ -1,0 +1,41 @@
+---
+# tasks file for nginx_role
+- name: Create vhost conf
+  template:
+    src: site.conf.j2
+    dest: "/etc/nginx/conf.d/{{ nginx_host.name }}.conf"
+    mode: 0644
+    owner: root
+    group: wheel
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  notify:
+    - nginx_restart
+
+- name: Add index.html RedHat
+  template:
+    src: index.html.j2
+    dest: "/var/www/html/{{ nginx_host.name }}/index.html"
+    mode: 0644
+    owner: nginx
+    group: nginx
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  when: ansible_os_family == "RedHat"
+
+- name: Add index.html "Debian"
+  template:
+    src: index.html.j2
+    dest: "/var/www/{{ nginx_host.name }}/index.html"
+    mode: 0644
+    owner: www-data
+    group: www-data
+  with_items:
+    - "{{ nginx_host }}"
+  loop_control:
+    loop_var: nginx_host
+  when: ansible_os_family == "Debian"

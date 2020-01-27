@@ -1,0 +1,42 @@
+{% block server_redirect %}
+{% if nginx_host.type == "redirect" %}
+server {
+    listen  80;
+    server_name {{ nginx_host.name }};
+    return 301 https://$host$request_uri;
+}
+{% endif %}
+{% endblock %}
+{% block server_basic %}
+{% if nginx_host.type == "http" %}
+server {
+  listen  80;
+  server_name {{ nginx_host.name }};
+  root /var/www/html/{{ nginx_host.name }};  
+  location / {
+       index index.html index.htm index.php;
+  }
+}
+{% endif %}
+{% endblock %}
+{% block server_ssl %}
+{% if nginx_host.type == "https" or nginx_host.type == "redirect" %}
+server {
+  listen              443 ssl;
+  server_name         {{ nginx_host.name }};
+
+  ssl_certificate         /etc/letsencrypt/live/{{ nginx_host.name }}/fullchain.pem;
+  ssl_certificate_key     /etc/letsencrypt/live/{{ nginx_host.name }}/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ nginx_host.name }}/fullchain.pem;
+
+  root /var/www/html/{{ nginx_host.name }};  
+  location / {
+       index index.html index.htm index.php;
+    
+  }
+
+  access_log /var/log/nginx/{{ nginx_host.name }}_access_log;
+  error_log /var/log/nginx/{{ nginx_host.name }}_error_log;
+}
+{% endif %}
+{% endblock %}
