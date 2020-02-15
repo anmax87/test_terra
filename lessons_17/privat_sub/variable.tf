@@ -1,0 +1,9 @@
+ variable "vpc_id" {}
+variable "vpc_cidr_block" {}
+variable "ami_id_nat" {}
+variable "instance_type_nat" {}
+variable "subnet_public_id" {}
+variable "nat_key_name" {}
+variable "nat_key_rsa_name" {}
+variable "subnet_aza" {}
+variable "subnet_azb" {}

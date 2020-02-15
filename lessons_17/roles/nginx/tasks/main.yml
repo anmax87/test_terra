@@ -1,0 +1,43 @@
+---
+- name: Add nginx yum repository
+  yum_repository:
+    name: nginx
+    description: Nginx Repository
+    baseurl: http://nginx.org/packages/centos/7/$basearch/
+    gpgkey: https://nginx.org/keys/nginx_signing.key
+    gpgcheck: yes
+    enabled: yes
+
+- name: Add epel repository
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+    gpgkey: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
+    gpgcheck: yes
+    enabled: yes
+
+- name: ensure a list of packages installed
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - nginx
+    - epel-release
+    - yum-utils
+
+  notify:
+    - nginx_enable
+
+- name: Set SELinux booleans for nginx
+  command: "setsebool -P {{ item }} on"
+  with_items:
+    - httpd_can_network_connect
+
+- name: Create default nginx conf
+  template:
+    src: default.conf.j2
+    dest: "/etc/nginx/nginx.conf"
+
+  notify:
+    - nginx_restart
