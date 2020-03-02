@@ -1,0 +1,65 @@
+node('AgentDocker') {
+    tool name: 'apache-maven', type: 'maven'
+ 
+      stage('Checkout external proj') {
+        git (branch: 'master',
+        credentialsId: 'git',
+        url: 'git@github.com:jenkins-docs/simple-java-maven-app.git')
+
+          sh "ls -lat"
+        }
+        
+      stage('Build') {
+        withEnv(["PATH=${env.PATH}:${tool 'apache-maven'}/bin"]){
+            sh 'mvn -B -DskipTests clean package'
+      }
+    }
+      stage('Test') {
+        withEnv(["PATH=${env.PATH}:${tool 'apache-maven'}/bin"]){
+            sh 'mvn test'
+            stash includes: 'target/my-app-1.0-SNAPSHOT.jar', name: 'artifactStash'
+        }
+          
+    }
+  }
+node('AgentDocker1') {
+      tool name: 'docker-latest'
+    stage('Ckeck prerequest'){
+        echo "${tool 'docker-latest'}"
+        sh "ls -lah"
+        withEnv(["PATH=${env.PATH}:${tool 'docker-latest'}/bin"]){
+        sh "docker -v"
+      }
+    }
+    stage('Checkout external proj') {
+      git (branch: 'master',
+      credentialsId: 'git',
+      url: 'git@github.com:anmax87/test-jenkins.git')
+
+        sh "ls -lat"
+    }
+    stage('unstash our application'){
+        unstash 'artifactStash'
+        sh 'ls -lah'
+        withEnv(["PATH=${env.PATH}:${tool 'docker-latest'}/bin"]){
+          sh 'docker ps -a'
+        } 
+    }
+    stage('Deploy Image') {
+        script {
+            withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker-latest') {
+              withEnv(["PATH=${env.PATH}:${tool 'docker-latest'}/bin"]){
+              def dockerImage = docker.build("anmaxx/jenkins-maven:${env.BUILD_ID}")
+              dockerImage.push()
+            }
+          }            
+        }
+    }
+    stage('Remove Unused docker image') {
+      withEnv(["PATH=${env.PATH}:${tool 'docker-latest'}/bin"]){
+        sh "docker rmi anmaxx/jenkins-maven:$BUILD_NUMBER"
+      }
+    }
+  }
+
+
